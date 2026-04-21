@@ -4,7 +4,7 @@ library(tidyverse)
 library(dplyr)
 library(lubridate) 
 
-setwd("01_data/interest_rate")
+setwd("/Users/fabiourrich/Library/CloudStorage/OneDrive-Personal/UIP_fx_volatility/Data/BA_Fabio/01_data/interest_rate")
 AUD <- readxl::read_xlsx("AUDOND.xlsx")
 EUR <- readxl::read_xlsx("EUROND.xlsx")
 GBP <- readxl::read_xlsx("GBPOND.xlsx")
