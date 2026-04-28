@@ -28,6 +28,14 @@ Archtest <- function(data, fx, home_int, US_int){
   #basic OLS Fama regression
   fama_model <- lm(log_returns ~ interest_rate_differential_daily, data = data)
   
+  t_value <- linearHypothesis(fama_model, c("interest_rate_differential_daily = 1"))
+  
+  #again, calculate t statistic and p value
+  beta_hat <- coef(fama_model)["interest_rate_differential_daily"]
+  se_beta  <- summary(fama_model)$coefficients["interest_rate_differential_daily", "Std. Error"]
+  t_stat_beta1 <- (beta_hat - 1) / se_beta
+  p_val_beta1  <- 2 * pt(-abs(t_stat_beta1), df = fama_model$df.residual)
+  
   
   arch_lag1 <- ArchTest(residuals(fama_model),lags = 1)
   arch_lag3 <- ArchTest(residuals(fama_model),lags = 3)
@@ -37,13 +45,15 @@ Archtest <- function(data, fx, home_int, US_int){
   
   #return results in list
   return(list(
-    model = fama_model,
-    summary = summary(fama_model),
+    #model = fama_model,
+    #summary = summary(fama_model),
+    coef = summary(fama_model)$coefficients,
     arch1 = arch_lag1,
     arch3 = arch_lag3,
     arch6 = arch_lag6,
     arch12 = arch_lag12,
-    data = data
+    #data = data,
+    p_value = p_val_beta1
   ))
 }
 

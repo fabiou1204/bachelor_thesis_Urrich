@@ -6,10 +6,10 @@ Fama <- function(data, fx, home_int, US_int){
   data <- data %>% filter(Date >= as.Date("2006-01-01") & Date <= as.Date("2025-12-31"))
   
   #calculate log returns of exchange rate
-  data <- data %>%
+  data <- data %>% 
     mutate(log_returns = log(lead({{fx}}, 1)) - log({{fx}}))
   data <- data %>% 
-    mutate(log_returns = log_returns+100)
+    mutate(log_returns = log_returns*100)
   #multiply by 100 to have log returns in percentage points, otherwise values are very small and hard to interpret ->better interpretation of beta
   #both fx log returns and interest rate differentials are in percentages; important to have same scale
   
@@ -22,6 +22,7 @@ Fama <- function(data, fx, home_int, US_int){
     #although rates are annualised, so dividing by 365 should be correct
     #for simplicity I just divide by 365 as often done in finance
     interest_rate_differential_daily =interest_rate_differential*days_gap/365) %>% 
+    #interest_rate_differential_daily =interest_rate_differential/365) %>% 
     na.omit()#because lead,1 in fx log returns creates ony NA at the end of the dataframe
   
   
@@ -29,13 +30,23 @@ Fama <- function(data, fx, home_int, US_int){
   #basic OLS Fama regression
   fama_model <- lm(log_returns ~ interest_rate_differential_daily, data = data)
   
+  t_value <- linearHypothesis(fama_model, c("interest_rate_differential_daily = 1"))
+  #linearHypothesis gives values for F statistic
+  
+  #calculate t statistic and pvalue
+  beta_hat <- coef(fama_model)["interest_rate_differential_daily"]
+  se_beta  <- summary(fama_model)$coefficients["interest_rate_differential_daily", "Std. Error"]
+  t_stat_beta1 <- (beta_hat - 1) / se_beta
+  p_val_beta1  <- 2 * pt(-abs(t_stat_beta1), df = fama_model$df.residual)
   
   #when always p<0,05 -->evidence for GARCH
   
   #return results in list
   return(list(
-    model = fama_model,
-    summary = summary(fama_model),
-    data = data
+    #model = fama_model,
+    #summary = summary(fama_model),
+    #data = data,
+    coef = summary(fama_model)$coefficients,
+    p_value = p_val_beta1
   ))
 }

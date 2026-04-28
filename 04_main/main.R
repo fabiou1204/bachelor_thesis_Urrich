@@ -13,6 +13,8 @@ library(ggplot2)
 library(dplyr)
 library(tseries)#for stationarity test
 library(urca)#for stationarity test
+library(car)
+
 
 #read exchange rates
 setwd("/Users/fabiourrich/Library/CloudStorage/OneDrive-Personal/UIP_fx_volatility/Data/BA_Fabio/01_data/fx_rates")
@@ -67,7 +69,6 @@ IDR_merged <- IDR_fx %>% inner_join(IDR_interest, by = "Date") %>% inner_join(US
 #Arch test for Fama regression residuals
 AUD_arch <- Archtest(AUD_merged, AUD_fx, AUD_int, US_int)
 print(AUD_arch)
-AUD_check <- AUD_arch$data %>% select("days_gap", "log_returns")
 EUR_arch <- Archtest(EUR_merged, EUR_fx, EUR_int, US_int)
 print(EUR_arch)
 GBP_arch <- Archtest(GBP_merged, GBP_fx, GBP_int, US_int)
@@ -184,6 +185,19 @@ print(INR_stationarity_int_diff)
 IDR_stationarity_int_diff <- stationarity_int(IDR_merged, IDR_int, US_int)
 print(IDR_stationarity_int_diff)
 
+
+
+
+########################### presentation to Ivan 
+EUR_arch <- Archtest(EUR_merged, EUR_fx, EUR_int, US_int)
+EUR_arch$summary$coefficients
+EUR_fama <- Fama(EUR_merged, EUR_fx, EUR_int, US_int)
+EUR_fama$summary$coefficients
+EUR_fama$t_value
+
+UK_fama <- Fama(GBP_merged, GBP_fx, GBP_int, US_int)
+UK_fama$summary$coefficients
+UK_fama$t_value
 
 
 
