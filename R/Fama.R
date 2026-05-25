@@ -2,9 +2,6 @@
 
 Fama <- function(data, fx, home_int, US_int){
   
-  #only use data from 01-01-2006 onwards, because volatility prediction will only be done for dates starting from 01-01-2006
-  data <- data %>% filter(Date >= as.Date("2006-01-01") & Date <= as.Date("2025-12-31"))
-  
   #calculate log returns of exchange rate
   data <- data %>% 
     mutate(log_returns = log(lead({{fx}}, 1)) - log({{fx}}))
@@ -43,9 +40,9 @@ Fama <- function(data, fx, home_int, US_int){
   
   #return results in list
   return(list(
-    #model = fama_model,
-    #summary = summary(fama_model),
-    #data = data,
+    model = fama_model,
+    summary = summary(fama_model),
+    data = data,
     coef = summary(fama_model)$coefficients,
     p_value = p_val_beta1
   ))

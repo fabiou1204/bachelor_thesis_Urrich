@@ -3,10 +3,7 @@
 #function for FAMA regression and ARCH test
 Archtest <- function(data, fx, home_int, US_int){
 
-  #only use data from 01-01-2000-31-12-2005 because volatility prediction will only be done for dates starting from 01-01-2006
-  #otherwise we would have a look ahead bias when applying GARCH models
-  data <- data %>% filter(Date >= as.Date("2000-01-01") & Date <= as.Date("2005-12-31"))
-  
+
   #calculate log returns of exchange rate
   data <- data %>%
     mutate(log_returns = (log(lead({{fx}}, 1)) - log({{fx}}))*100) 

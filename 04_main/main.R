@@ -14,6 +14,9 @@ library(dplyr)
 library(tseries)#for stationarity test
 library(urca)#for stationarity test
 library(car)
+library(purrr)
+library(tseries)
+library(moments)
 
 
 #read exchange rates
@@ -79,6 +82,21 @@ INR_arch <- Archtest(INR_merged, INR_fx, INR_int, US_int)
 print(INR_arch)
 IDR_arch <- Archtest(IDR_merged, IDR_fx, IDR_int, US_int)
 print(IDR_arch)
+
+
+#Ljung Box test for Fama residuals and squared residuals
+ljung_box_fama_aud  <- ljung_box(residuals(AUD_fama$model))
+print(ljung_box_fama_aud)
+ljung_box_fama_eur  <- ljung_box(residuals(EUR_fama$model))
+print(ljung_box_fama_eur)
+ljung_box_fama_gbp  <- ljung_box(residuals(GBP_fama$model))
+print(ljung_box_fama_gbp)
+ljung_box_fama_zar  <- ljung_box(residuals(ZAR_fama$model))
+print(ljung_box_fama_zar)
+ljung_box_fama_inr  <- ljung_box(residuals(INR_fama$model))
+print(ljung_box_fama_inr)
+ljung_box_fama_idr  <- ljung_box(residuals(IDR_fama$model))
+print(ljung_box_fama_idr)
 
 
 #calculate Fama regerssion from 2006-2025 as benchmark
@@ -184,6 +202,28 @@ INR_stationarity_int_diff <- stationarity_int(INR_merged, INR_int, US_int)
 print(INR_stationarity_int_diff)
 IDR_stationarity_int_diff <- stationarity_int(IDR_merged, IDR_int, US_int)
 print(IDR_stationarity_int_diff)
+
+
+#Jarque Bera test to check for normality in log returns
+AUD_jb <- jb_test(AUD_merged, AUD_fx)
+print(AUD_jb)
+EUR_jb <- jb_test(EUR_merged, EUR_fx)
+print(EUR_jb)
+GBP_jb <- jb_test(GBP_merged, GBP_fx)
+print(GBP_jb)
+ZAR_jb <- jb_test(ZAR_merged, ZAR_fx)
+print(ZAR_jb)
+INR_jb <- jb_test(INR_merged, INR_fx)
+print(INR_jb)
+IDR_jb <- jb_test(IDR_merged, IDR_fx)
+print(IDR_jb)
+
+
+
+
+
+
+
 
 
 
