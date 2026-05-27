@@ -17,6 +17,8 @@ library(car)
 library(purrr)
 library(tseries)
 library(moments)
+library(rugarch)
+library(aod)#used for Wald test
 
 
 #read exchange rates
@@ -84,27 +86,14 @@ IDR_arch <- Archtest(IDR_merged, IDR_fx, IDR_int, US_int)
 print(IDR_arch)
 
 
-#Ljung Box test for Fama residuals and squared residuals
-ljung_box_fama_aud  <- ljung_box(residuals(AUD_fama$model))
-print(ljung_box_fama_aud)
-ljung_box_fama_eur  <- ljung_box(residuals(EUR_fama$model))
-print(ljung_box_fama_eur)
-ljung_box_fama_gbp  <- ljung_box(residuals(GBP_fama$model))
-print(ljung_box_fama_gbp)
-ljung_box_fama_zar  <- ljung_box(residuals(ZAR_fama$model))
-print(ljung_box_fama_zar)
-ljung_box_fama_inr  <- ljung_box(residuals(INR_fama$model))
-print(ljung_box_fama_inr)
-ljung_box_fama_idr  <- ljung_box(residuals(IDR_fama$model))
-print(ljung_box_fama_idr)
 
 
-#calculate Fama regerssion from 2006-2025 as benchmark
+#calculate Fama regerssion as benchmark
 AUD_fama <- Fama(AUD_merged, AUD_fx, AUD_int, US_int)
 print(AUD_fama)
 #check whether interest rates and fx log returns have the same scale
-mean(AUD_fama$data$log_returns)
-mean(AUD_fama$data$interest_rate_differential_daily)
+#mean(AUD_fama$data$log_returns)
+#mean(AUD_fama$data$interest_rate_differential_daily)
 
 EUR_fama <- Fama(EUR_merged, EUR_fx, EUR_int, US_int)
 print(EUR_fama)
@@ -204,6 +193,21 @@ IDR_stationarity_int_diff <- stationarity_int(IDR_merged, IDR_int, US_int)
 print(IDR_stationarity_int_diff)
 
 
+#Ljung Box test for Fama residuals and squared residuals
+ljung_box_fama_aud  <- ljung_box(residuals(AUD_fama$model))
+print(ljung_box_fama_aud)
+ljung_box_fama_eur  <- ljung_box(residuals(EUR_fama$model))
+print(ljung_box_fama_eur)
+ljung_box_fama_gbp  <- ljung_box(residuals(GBP_fama$model))
+print(ljung_box_fama_gbp)
+ljung_box_fama_zar  <- ljung_box(residuals(ZAR_fama$model))
+print(ljung_box_fama_zar)
+ljung_box_fama_inr  <- ljung_box(residuals(INR_fama$model))
+print(ljung_box_fama_inr)
+ljung_box_fama_idr  <- ljung_box(residuals(IDR_fama$model))
+print(ljung_box_fama_idr)
+
+
 #Jarque Bera test to check for normality in log returns
 AUD_jb <- jb_test(AUD_merged, AUD_fx)
 print(AUD_jb)
@@ -219,6 +223,19 @@ IDR_jb <- jb_test(IDR_merged, IDR_fx)
 print(IDR_jb)
 
 
+#GARCH(1,1)
+AUD_garch <- garch_m(AUD_merged, AUD_fx, AUD_int, US_int)
+print(AUD_garch)
+EUR_garch <- garch_m(EUR_merged, EUR_fx, EUR_int, US_int)
+print(EUR_garch)
+GBP_garch <- garch_m(GBP_merged, GBP_fx, GBP_int, US_int)
+print(GBP_garch)
+ZAR_garch <- garch_m(ZAR_merged, ZAR_fx, ZAR_int, US_int)
+print(ZAR_garch)
+INR_garch <- garch_m(INR_merged, INR_fx, INR_int, US_int)
+print(INR_garch)
+IDR_garch <- garch_m(IDR_merged, IDR_fx, IDR_int, US_int)
+print(IDR_garch)
 
 
 
@@ -226,18 +243,6 @@ print(IDR_jb)
 
 
 
-
-
-########################### presentation to Ivan 
-EUR_arch <- Archtest(EUR_merged, EUR_fx, EUR_int, US_int)
-EUR_arch$summary$coefficients
-EUR_fama <- Fama(EUR_merged, EUR_fx, EUR_int, US_int)
-EUR_fama$summary$coefficients
-EUR_fama$t_value
-
-UK_fama <- Fama(GBP_merged, GBP_fx, GBP_int, US_int)
-UK_fama$summary$coefficients
-UK_fama$t_value
 
 
 
