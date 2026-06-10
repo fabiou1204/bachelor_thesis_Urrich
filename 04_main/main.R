@@ -19,6 +19,7 @@ library(tseries)
 library(moments)
 library(rugarch)
 library(aod)#used for Wald test
+library(zoo)
 
 
 #read exchange rates
@@ -239,9 +240,104 @@ print(IDR_garch)
 
 
 
+###########robustness checks
+#rolling window regression
+rolling_aud <- rob_roll_window(AUD_merged, AUD_fx, AUD_int, US_int)
+print(rolling_aud)
+rolling_eur <- rob_roll_window(EUR_merged, EUR_fx, EUR_int, US_int)
+print(rolling_eur)
+rolling_gbp <- rob_roll_window(GBP_merged, GBP_fx, GBP_int, US_int)
+print(rolling_gbp)
+rolling_zar <- rob_roll_window(ZAR_merged, ZAR_fx, ZAR_int, US_int)
+print(rolling_zar)
+rolling_inr <- rob_roll_window(INR_merged, INR_fx, INR_int, US_int)
+print(rolling_inr)
+rolling_idr <- rob_roll_window(IDR_merged, IDR_fx, IDR_int, US_int)
+print(rolling_idr)
 
 
+#GARCH under QMLE with normal distribution
+AUD_garch_qmle <- garch_m(AUD_merged, AUD_fx, AUD_int, US_int, dist = "norm")
+AUD_garch_qmle
+EUR_garch_qmle <- garch_m(EUR_merged, EUR_fx, EUR_int, US_int, dist = "norm")
+EUR_garch_qmle
+GBP_garch_qmle <- garch_m(GBP_merged, GBP_fx, GBP_int, US_int, dist = "norm")
+GBP_garch_qmle
+ZAR_garch_qmle <- garch_m(ZAR_merged, ZAR_fx, ZAR_int, US_int, dist = "norm")
+ZAR_garch_qmle
+INR_garch_qmle <- garch_m(INR_merged, INR_fx, INR_int, US_int, dist = "norm")
+INR_garch_qmle
+IDR_garch_qmle <- garch_m(IDR_merged, IDR_fx, IDR_int, US_int, dist = "norm")
+IDR_garch_qmle
 
+
+#GARCH under asymmetric GJR GARCH model
+AUD_garch_gjr <- garch_m(AUD_merged, AUD_fx, AUD_int, US_int, model = "gjrGARCH")
+AUD_garch_gjr
+EUR_garch_gjr <- garch_m(EUR_merged, EUR_fx, EUR_int, US_int, model = "gjrGARCH")
+EUR_garch_gjr
+GBP_garch_gjr <- garch_m(GBP_merged, GBP_fx, GBP_int, US_int, model = "gjrGARCH")
+GBP_garch_gjr
+ZAR_garch_gjr <- garch_m(ZAR_merged, ZAR_fx, ZAR_int, US_int, model = "gjrGARCH")
+ZAR_garch_gjr
+INR_garch_gjr <- garch_m(INR_merged, INR_fx, INR_int, US_int, model = "gjrGARCH")
+INR_garch_gjr
+IDR_garch_gjr <- garch_m(IDR_merged, IDR_fx, IDR_int, US_int, model = "gjrGARCH")
+IDR_garch_gjr
+
+
+#Ljung Box test on standardized squared GARCH residuals 
+lb_garch_aud <- ljung_box(as.numeric(residuals(AUD_garch$garch_model, standardize = TRUE)), df = 2)
+lb_garch_aud
+lb_garch_eur <- ljung_box(as.numeric(residuals(EUR_garch$garch_model, standardize = TRUE)), df = 2)
+lb_garch_eur
+lb_garch_gbp <- ljung_box(as.numeric(residuals(GBP_garch$garch_model, standardize = TRUE)), df = 2)
+lb_garch_gbp
+lb_garch_zar <- ljung_box(as.numeric(residuals(ZAR_garch$garch_model, standardize = TRUE)), df = 2)
+lb_garch_zar
+lb_garch_inr <- ljung_box(as.numeric(residuals(INR_garch$garch_model, standardize = TRUE)), df = 2)
+lb_garch_inr
+lb_garch_idr <- ljung_box(as.numeric(residuals(IDR_garch$garch_model, standardize = TRUE)), df = 2)
+lb_garch_idr
+
+
+#comparison of beta values
+high_income_results <- list(AUD = AUD_fama, EUR = EUR_fama, GBP = GBP_fama)
+mid_income_results  <- list(ZAR = ZAR_fama, INR = INR_fama, IDR = IDR_fama)
+beta_comparison <- compare_betas(high_income_results, mid_income_results)
+beta_comparison
+
+
+########################
+#plots
+#plot of log returns and interest rate differentials over time
+AUD_plot_fx_int <- plot_int_dif_fx_return(AUD_merged, AUD_fx, AUD_int, US_int)
+AUD_plot_fx_int$plot
+EUR_plot_fx_int <- plot_int_dif_fx_return(EUR_merged, EUR_fx, EUR_int, US_int)
+EUR_plot_fx_int$plot
+GBP_plot_fx_int <- plot_int_dif_fx_return(GBP_merged, GBP_fx, GBP_int, US_int)
+GBP_plot_fx_int$plot
+ZAR_plot_fx_int <- plot_int_dif_fx_return(ZAR_merged, ZAR_fx, ZAR_int, US_int)
+ZAR_plot_fx_int$plot
+INR_plot_fx_int <- plot_int_dif_fx_return(INR_merged, INR_fx, INR_int, US_int)
+INR_plot_fx_int$plot
+IDR_plot_fx_int <- plot_int_dif_fx_return(IDR_merged, IDR_fx, IDR_int, US_int)
+IDR_plot_fx_int$plot
+
+
+#plot of conditional variance
+AUD_plot_cond_vol <- plot_cond_vol(AUD_merged, AUD_garch$garch_model)
+AUD_plot_cond_vol
+EUR_plot_cond_vol <- plot_cond_vol(EUR_merged, EUR_garch$garch_model)
+EUR_plot_cond_vol
+GBP_plot_cond_vol <- plot_cond_vol(GBP_merged, GBP_garch$garch_model)
+GBP_plot_cond_vol
+ZAR_plot_cond_vol <- plot_cond_vol(ZAR_merged, ZAR_garch$garch_model)
+ZAR_plot_cond_vol
+INR_plot_cond_vol <- plot_cond_vol(INR_merged, INR_garch$garch_model)
+INR_plot_cond_vol
+IDR_plot_cond_vol <- plot_cond_vol(IDR_merged, IDR_garch$garch_model)
+IDR_plot_cond_vol
 
 
 

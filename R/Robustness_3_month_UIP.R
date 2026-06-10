@@ -32,12 +32,22 @@ fama_monthly <- function(data, fx, home_int, USD_int){
   #basic OLS Fama regression
   fama_model <- lm(log_returns ~ interest_rate_differential_monthly, data = data)
   
-  beta_test <- linearHypothesis(fama_model, c("interest_rate_differential_monthly = 1"))
-  #linearHypothesis calculates a f statistic. However, p value is the same, so it is fine for this quick double check
+  #use of Newey West standard errors due to autocorrelation in error terms
+  nw_vcov <- NeweyWest(fama_model, lag = 2, prewhite = FALSE)#lag 2 because error term follows MA(2) structure
+  nw_coef <- coeftest(fama_model, vcov = nw_vcov)
   
+  #linearHypothesis calculates a f statistic. However, p value is the same, so it is fine for this quick double check
+  beta_test <- linearHypothesis(fama_model, 
+                                c("interest_rate_differential_monthly = 1"),
+                                vcov. = nw_vcov)
+  
+  
+
+                                
   return(list(
-    data = data,
-    coef = summary(fama_model)$coefficients,
+    #data = data,
+    #coef = summary(fama_model)$coefficients, #original OLS coefs
+    nw_coef = nw_coef, #newey west adjusted summary
     beta_test = beta_test
     ))
 }

@@ -7,6 +7,7 @@ jb_test <- function(data, fx){
   
   returns <- data$log_returns
   jb <- jarque.bera.test(returns)#jarque bera test
+  #null hypothesis that kurtosis is 3 and skewness is 0
   
   #JB puts both of these info into one statistic; but knowing values important for correct distribution choice
   skew <- moments::skewness(returns)

@@ -19,8 +19,10 @@ ljung_box <- function(resid, lags = c(5, 10, 20), df = 0){
     p_value = c(as.numeric(normal_resid$p.value), as.numeric(squared_resid$p.value))
   )
   })
-  return(list(lag = lags, results = results))
   
+  return(list(
+    lag = lags,
+    results = results))
   }
 
 
@@ -28,6 +30,6 @@ ljung_box <- function(resid, lags = c(5, 10, 20), df = 0){
 
 
 #how to call in main
-#lb_fama_aud  <- ljung_box(residuals(fama_aud$model))                          
-#lb_garch_aud <- ljung_box(as.numeric(residuals(garch_aud, standardize = TRUE)),
-#                         fitdf_squared = 2)
+#lb_fama_aud  <- ljung_box(residuals(AUD_fama$model))                          
+#lb_garch_aud <- ljung_box(as.numeric(residuals(AUD_garch$garch_model, standardize = TRUE)),
+#                         df = 2)

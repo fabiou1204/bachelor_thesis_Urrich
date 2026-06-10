@@ -15,12 +15,14 @@ stationarity_int <- function(data, home_int, US_int){
   adf_result <- ur.df(data$interest_rate_differential_daily, type = "drift", selectlags = "AIC")
   adf_stat      <- as.numeric(adf_result@teststat[, "tau2"]) #extract the adf statistic
   adf_crit_5pct <- as.numeric(adf_result@cval["tau2", "5pct"]) #extract 5% crit value
+  adf_crit_1pct <- as.numeric(adf_result@cval["tau2", "1pct"]) #extract 1% crit value
   
 
   
   return(list(
     adf_stat = adf_stat,
-    adf_crit_5pct = adf_crit_5pct
+    adf_crit_5pct = adf_crit_5pct,
+    adf_crit_1pct = adf_crit_1pct
   ))
   
 }

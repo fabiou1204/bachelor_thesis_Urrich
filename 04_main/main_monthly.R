@@ -11,6 +11,8 @@ library(readxl)
 library(ggplot2)
 library(dplyr)
 library(car)
+library(sandwich)
+library(lmtest)
 
 
 #read fx rates

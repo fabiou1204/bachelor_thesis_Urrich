@@ -1,6 +1,10 @@
 #GARCH(1,1) analysis with t-distribution
 
-garch_m <- function(data, fx, home_int, US_int){
+#includes options for robustness checks
+#QMLE GARCH via dist argument
+#asymmetric via model argument
+
+garch_m <- function(data, fx, home_int, US_int, dist = "std", model = "sGARCH"){
 
   #calculate log returns of exchange rate
   data <- data %>% 
@@ -8,7 +12,7 @@ garch_m <- function(data, fx, home_int, US_int){
   data <- data %>% 
     mutate(log_returns = log_returns*100)
   
-  #calculate interest rate differential equivalently to Fama.R
+  #calculate interest rate differential equivalently to UIP_regression.R
   data <- data %>% mutate(
     days_gap = as.numeric(difftime(lead(Date, 1) , Date, units ="days")),
     interest_rate_differential = {{home_int}} - {{US_int}},
@@ -19,13 +23,13 @@ garch_m <- function(data, fx, home_int, US_int){
   spec <- ugarchspec(
     #ugarchspec() defines structure of model without calculating it directly
     #ugarchspec() has the following three arguments to specify the garch model
-    variance.model = list(model = "sGARCH", garchOrder = c(1,1)),#sGarch is symmetric garch model
+    variance.model = list(model = model, garchOrder = c(1,1)),#sGarch is symmetric garch model and used as default
     mean.model = list(armaOrder = c(0,0), include.mean = TRUE, #TRUE includes intercept
                       archm = TRUE, archpow = 1, 
                       #archm TRUE includes conditional variance estimate in mean equation
                       #archpow gives power for conditional variance estimate in mean equation
                       external.regressors = matrix(data$interest_rate_differential_daily)),
-    distribution.model = "std"#choose student t dist
+    distribution.model = dist #default is student t dist
   )
   
   garch_estimation <- ugarchfit( #ugarchfit runs the joint MLE
@@ -40,6 +44,8 @@ garch_m <- function(data, fx, home_int, US_int){
   robust_se <- garch_estimation@fit$robust.matcoef #coef with robust SEs from Bollerslev-Wooldridge
   #check persisitence in var equation, i.e. check stationarity
   persistence <- coef(garch_estimation)["alpha1"] + coef(garch_estimation)["beta1"] 
+  persistence_package <- rugarch::persistence(garch_estimation) #directly calculates persistence via packag
+  #needed for GJR Garch, because persistence is given by alpha+beta+gamma*0.5
   
   #Wald test for no risk premium at all
   theta <- coef(garch_estimation)#extract estimated parameters
@@ -76,6 +82,7 @@ garch_m <- function(data, fx, home_int, US_int){
     conventional_se = conv_se,
     robust_se = robust_se,
     persistence = persistence,
+    persistence_package = persistence_package,
     wald_no_premium = wald_result$result$chi2,  
     wald_beta = wald_beta$result$chi2,
     gof = gof_test,

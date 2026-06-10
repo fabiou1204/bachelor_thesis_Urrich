@@ -34,10 +34,9 @@ Archtest <- function(data, fx, home_int, US_int){
   p_val_beta1  <- 2 * pt(-abs(t_stat_beta1), df = fama_model$df.residual)
   
   
-  arch_lag1 <- ArchTest(residuals(fama_model),lags = 1)
-  arch_lag3 <- ArchTest(residuals(fama_model),lags = 3)
-  arch_lag6 <- ArchTest(residuals(fama_model),lags = 6)
-  arch_lag12 <- ArchTest(residuals(fama_model),lags = 12)
+  arch_lag5 <- ArchTest(residuals(fama_model),lags = 5)
+  arch_lag10 <- ArchTest(residuals(fama_model),lags = 10)
+  arch_lag20 <- ArchTest(residuals(fama_model),lags = 20)
   #when always p<0,05 -->evidence for GARCH
   
   #return results in list
@@ -45,10 +44,9 @@ Archtest <- function(data, fx, home_int, US_int){
     #model = fama_model,
     #summary = summary(fama_model),
     coef = summary(fama_model)$coefficients,
-    arch1 = arch_lag1,
-    arch3 = arch_lag3,
-    arch6 = arch_lag6,
-    arch12 = arch_lag12,
+    arch5 = arch_lag5,
+    arch10 = arch_lag10,
+    arch20 = arch_lag20,
     #data = data,
     p_value = p_val_beta1
   ))

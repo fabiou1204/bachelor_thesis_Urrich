@@ -15,8 +15,6 @@ Fama <- function(data, fx, home_int, US_int){
   data <- data %>% mutate(
     days_gap = as.numeric(difftime(lead(Date, 1), Date, units = "days")),
     interest_rate_differential = {{home_int}} - {{US_int}},
-    #????consider leap years: divide by 366 on each day that is at least one year ahead of the 29 february of the leap year
-    #although rates are annualised, so dividing by 365 should be correct
     #for simplicity I just divide by 365 as often done in finance
     interest_rate_differential_daily =interest_rate_differential*days_gap/365) %>% 
     #interest_rate_differential_daily =interest_rate_differential/365) %>% 
@@ -29,14 +27,12 @@ Fama <- function(data, fx, home_int, US_int){
   
   t_value <- linearHypothesis(fama_model, c("interest_rate_differential_daily = 1"))
   #linearHypothesis gives values for F statistic
-  
+  #double check with manual calculation
   #calculate t statistic and pvalue
   beta_hat <- coef(fama_model)["interest_rate_differential_daily"]
   se_beta  <- summary(fama_model)$coefficients["interest_rate_differential_daily", "Std. Error"]
   t_stat_beta1 <- (beta_hat - 1) / se_beta
   p_val_beta1  <- 2 * pt(-abs(t_stat_beta1), df = fama_model$df.residual)
-  
-  #when always p<0,05 -->evidence for GARCH
   
   #return results in list
   return(list(
