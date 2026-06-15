@@ -8,13 +8,13 @@ garch_m <- function(data, fx, home_int, US_int, dist = "std", model = "sGARCH"){
 
   #calculate log returns of exchange rate
   data <- data %>% 
-    mutate(log_returns = log(lead({{fx}}, 1)) - log({{fx}}))
+    mutate(log_returns = log(dplyr::lead({{fx}}, 1)) - log({{fx}}))
   data <- data %>% 
     mutate(log_returns = log_returns*100)
   
   #calculate interest rate differential equivalently to UIP_regression.R
   data <- data %>% mutate(
-    days_gap = as.numeric(difftime(lead(Date, 1) , Date, units ="days")),
+    days_gap = as.numeric(difftime(dplyr::lead(Date, 1) , Date, units ="days")),
     interest_rate_differential = {{home_int}} - {{US_int}},
     interest_rate_differential_daily = interest_rate_differential*days_gap/365) %>% 
     na.omit()

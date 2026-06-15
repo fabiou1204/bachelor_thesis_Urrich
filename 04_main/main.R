@@ -20,6 +20,9 @@ library(moments)
 library(rugarch)
 library(aod)#used for Wald test
 library(zoo)
+library(lmtest)
+library(plm)
+library(sandwich)
 
 
 #read exchange rates
@@ -70,9 +73,23 @@ IDR_merged <- IDR_fx %>% inner_join(IDR_interest, by = "Date") %>% inner_join(US
   mutate(IDR_int = as.numeric(IDR_int), US_int = as.numeric(US_int)) %>%
   na.omit()
 
+#summary statistics for merged data
+AUD_summary <- summary_stats(AUD_merged, AUD_fx, AUD_int, US_int)
+AUD_summary
+EUR_summary <- summary_stats(EUR_merged, EUR_fx, EUR_int, US_int)
+EUR_summary
+GBP_summary <- summary_stats(GBP_merged, GBP_fx, GBP_int, US_int)
+GBP_summary
+ZAR_summary <- summary_stats(ZAR_merged, ZAR_fx, ZAR_int, US_int)
+ZAR_summary
+INR_summary <- summary_stats(INR_merged, INR_fx, INR_int, US_int)
+INR_summary
+IDR_summary <- summary_stats(IDR_merged, IDR_fx, IDR_int, US_int)
+IDR_summary
 
 
-#Arch test for Fama regression residuals
+
+#Arch test on Fama regression residuals
 AUD_arch <- Archtest(AUD_merged, AUD_fx, AUD_int, US_int)
 print(AUD_arch)
 EUR_arch <- Archtest(EUR_merged, EUR_fx, EUR_int, US_int)
@@ -85,8 +102,6 @@ INR_arch <- Archtest(INR_merged, INR_fx, INR_int, US_int)
 print(INR_arch)
 IDR_arch <- Archtest(IDR_merged, IDR_fx, IDR_int, US_int)
 print(IDR_arch)
-
-
 
 
 #calculate Fama regerssion as benchmark
@@ -106,35 +121,6 @@ INR_fama <- Fama(INR_merged, INR_fx, INR_int, US_int)
 print(INR_fama)
 IDR_fama <- Fama(IDR_merged, IDR_fx, IDR_int, US_int)
 print(IDR_fama)
-
-
-#plot fx time series data to check for drifts and trends
-AUD_plot_stationarity <- plot_stationarity_1(AUD_merged, Date, AUD_fx)
-AUD_plot_stationarity
-EUR_plot_stationarity <- plot_stationarity_1(EUR_merged, Date, EUR_fx)
-EUR_plot_stationarity
-GBP_plot_stationarity <- plot_stationarity_1(GBP_merged, Date, GBP_fx)
-GBP_plot_stationarity
-ZAR_plot_stationarity <- plot_stationarity_1(ZAR_merged, Date, ZAR_fx)
-ZAR_plot_stationarity
-INR_plot_stationarity <- plot_stationarity_1(INR_merged, Date, INR_fx)
-INR_plot_stationarity
-IDR_plot_stationarity <- plot_stationarity_1(IDR_merged, Date, IDR_fx)
-IDR_plot_stationarity
-
-#plot of interest rate data to check for drifts and trends
-AUD_plot_stationarity_int <- plot_stationarity_1(AUD_merged, Date, AUD_int)
-AUD_plot_stationarity_int
-EUR_plot_stationarity_int <- plot_stationarity_1(EUR_merged, Date, EUR_int)
-EUR_plot_stationarity_int
-GBP_plot_stationarity_int <- plot_stationarity_1(GBP_merged, Date, GBP_int)
-GBP_plot_stationarity_int
-ZAR_plot_stationarity_int <- plot_stationarity_1(ZAR_merged, Date, ZAR_int)
-ZAR_plot_stationarity_int
-INR_plot_stationarity_int <- plot_stationarity_1(INR_merged, Date, INR_int)
-INR_plot_stationarity_int
-IDR_plot_stationarity_int <- plot_stationarity_1(IDR_merged, Date, IDR_int)
-IDR_plot_stationarity_int
 
 #check for stationarity of fx rates
 AUD_stationarity_fx <- stationrity_1(AUD_merged, "AUD_fx")
@@ -306,6 +292,13 @@ high_income_results <- list(AUD = AUD_fama, EUR = EUR_fama, GBP = GBP_fama)
 mid_income_results  <- list(ZAR = ZAR_fama, INR = INR_fama, IDR = IDR_fama)
 beta_comparison <- compare_betas(high_income_results, mid_income_results)
 beta_comparison
+#view(beta_comparison$pooled_data)
+#comparison without AUD
+high_income_results_no_aud <- list(EUR = EUR_fama, GBP = GBP_fama)
+beta_comparison_no_aud <- compare_betas(high_income_results_no_aud, mid_income_results)
+beta_comparison_no_aud
+
+
 
 
 ########################
@@ -338,6 +331,34 @@ INR_plot_cond_vol <- plot_cond_vol(INR_merged, INR_garch$garch_model)
 INR_plot_cond_vol
 IDR_plot_cond_vol <- plot_cond_vol(IDR_merged, IDR_garch$garch_model)
 IDR_plot_cond_vol
+
+#plot fx time series data to check for drifts and trends
+AUD_plot_stationarity <- plot_stationarity_1(AUD_merged, Date, AUD_fx, type = "Exchange Rate")
+AUD_plot_stationarity
+EUR_plot_stationarity <- plot_stationarity_1(EUR_merged, Date, EUR_fx, type = "Exchange Rate")
+EUR_plot_stationarity
+GBP_plot_stationarity <- plot_stationarity_1(GBP_merged, Date, GBP_fx, type = "Exchange Rate")
+GBP_plot_stationarity
+ZAR_plot_stationarity <- plot_stationarity_1(ZAR_merged, Date, ZAR_fx)
+ZAR_plot_stationarity
+INR_plot_stationarity <- plot_stationarity_1(INR_merged, Date, INR_fx)
+INR_plot_stationarity
+IDR_plot_stationarity <- plot_stationarity_1(IDR_merged, Date, IDR_fx)
+IDR_plot_stationarity
+
+#plot of interest rate data to check for drifts and trends
+AUD_plot_stationarity_int <- plot_stationarity_1(AUD_merged, Date, AUD_int)
+AUD_plot_stationarity_int
+EUR_plot_stationarity_int <- plot_stationarity_1(EUR_merged, Date, EUR_int)
+EUR_plot_stationarity_int
+GBP_plot_stationarity_int <- plot_stationarity_1(GBP_merged, Date, GBP_int)
+GBP_plot_stationarity_int
+ZAR_plot_stationarity_int <- plot_stationarity_1(ZAR_merged, Date, ZAR_int)
+ZAR_plot_stationarity_int
+INR_plot_stationarity_int <- plot_stationarity_1(INR_merged, Date, INR_int)
+INR_plot_stationarity_int
+IDR_plot_stationarity_int <- plot_stationarity_1(IDR_merged, Date, IDR_int)
+IDR_plot_stationarity_int
 
 
 

@@ -2,7 +2,7 @@
 
 
 jb_test <- function(data, fx){
-  data <- data %>% mutate(log_returns = (log(lead({{fx}}, 1)) - log({{fx}}))*100) %>% 
+  data <- data %>% mutate(log_returns = (log(dplyr::lead({{fx}}, 1)) - log({{fx}}))*100) %>% 
     na.omit()#calculate log returns as done before for Fama()
   
   returns <- data$log_returns

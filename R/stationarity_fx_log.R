@@ -3,7 +3,7 @@
 stationarity_fx <- function(data, fx){
   
   data <- data %>% mutate(
-    log_returns = (log(lead({{fx}},1)) - log({{fx}}))*100) %>% 
+    log_returns = (log(dplyr::lead({{fx}},1)) - log({{fx}}))*100) %>% 
       drop_na(log_returns)#since lead,1 creates an NA at the end of the column
   
   data_fx <- data$log_returns

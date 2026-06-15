@@ -4,7 +4,7 @@ stationarity_int <- function(data, home_int, US_int){
   
   #calculate daily interest rate differential scaled by days gap again, since this time series is used as regressor later
   data <- data %>% mutate(
-    days_gap = as.numeric(difftime(lead(Date, 1), Date, units = "days")),
+    days_gap = as.numeric(difftime(dplyr::lead(Date, 1), Date, units = "days")),
     interest_rate_differential = {{home_int}} - {{US_int}},
     interest_rate_differential_daily = interest_rate_differential*days_gap/365) %>% 
     drop_na(interest_rate_differential_daily) #because lead,1 creates an NA

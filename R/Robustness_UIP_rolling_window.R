@@ -2,16 +2,14 @@
 #create five year rolling windows with monthly shifts
 #extract average, min, max beta
 #create figure with rolling betas and confidence intervals
-
-
 rob_roll_window <- function(data, fx, home_int, US_int){
   
   #calculate log returns of exchange rate
   #same as done before in UIP_regression.R
   data <- data %>% 
     mutate(
-      log_returns = (log(lead({{fx}}, 1)) - log({{fx}})) * 100,
-      days_gap = as.numeric(difftime(lead(Date, 1), Date, units = "days")),
+      log_returns = (log(dplyr::lead({{fx}}, 1)) - log({{fx}})) * 100,
+      days_gap = as.numeric(difftime(dplyr::lead(Date, 1), Date, units = "days")),
       interest_rate_differential = {{home_int}} - {{US_int}},
       interest_rate_differential_daily = interest_rate_differential * days_gap / 365
     ) %>% 
@@ -39,15 +37,29 @@ rob_roll_window <- function(data, fx, home_int, US_int){
       filter(YearMonth >= start_month & YearMonth <= end_month)
     #run UIP baseline reg
     model <- lm(log_returns ~ interest_rate_differential_daily, data = window_data)
-    #calculate 95% confidence interval
-    conf_int_beta <- confint(model, "interest_rate_differential_daily", level = 0.95)
+    
+    #Newey West SEs; lag equals first lag of ACF that is not statistically different from 0 
+    res_w     <- residuals(model)
+    n_w       <- length(res_w)
+    acf_w     <- as.numeric(acf(res_w, lag.max = 15, plot = FALSE)$acf)[-1]#drop lag 0 via -1
+    conf_w    <- 1.96 / sqrt(n_w)
+    insig_w   <- which(abs(acf_w) < conf_w)
+    nw_lag_w  <- if (length(insig_w) > 0) insig_w[1] else 15#first insignificant lag, otherwise 15
+    nw_vcov_w <- sandwich::NeweyWest(model, lag = nw_lag_w, prewhite = FALSE, adjust = TRUE)
+    
+    beta_w  <- coef(model)["interest_rate_differential_daily"]
+    se_nw_w <- sqrt(nw_vcov_w["interest_rate_differential_daily",
+                              "interest_rate_differential_daily"])
+    crit    <- qt(0.975, df = model$df.residual)
+    
     #save results in list
     result_list[[i - 59]] <- list(
       start_month = start_month,
       end_month = end_month,
-      beta = coef(model)["interest_rate_differential_daily"],
-      conf_int_lower = conf_int_beta[1],
-      conf_int_upper = conf_int_beta[2]
+      beta = beta_w,
+      conf_int_lower = beta_w - crit * se_nw_w,# Newey West lower bound
+      conf_int_upper = beta_w + crit * se_nw_w,#Newey West upper bound
+      nw_lag = nw_lag_w #chosen lag
     )
   }
   
@@ -58,7 +70,6 @@ rob_roll_window <- function(data, fx, home_int, US_int){
   avg_beta <- mean(rolling_results$beta, na.rm = TRUE)
   min_beta <- min(rolling_results$beta, na.rm = TRUE)
   max_beta <- max(rolling_results$beta, na.rm = TRUE)
-
   
   #create figure with window betas and corresponding confidence  intervals
   #extract currency name
@@ -88,4 +99,3 @@ rob_roll_window <- function(data, fx, home_int, US_int){
   
   
 }
-  

@@ -4,12 +4,12 @@ plot_int_dif_fx_return <- function(data, fx, home_int, US_int){
   #same as in UIP_regression.R
   #calculate log returns of exchange rate
   data <- data %>% 
-    mutate(log_returns = log(lead({{fx}}, 1)) - log({{fx}})) %>% 
+    mutate(log_returns = log(dplyr::lead({{fx}}, 1)) - log({{fx}})) %>% 
     mutate(log_returns = log_returns*100)
 
   #calculate interest rate differential
   data <- data %>% mutate(
-    days_gap = as.numeric(difftime(lead(Date, 1), Date, units = "days")),
+    days_gap = as.numeric(difftime(dplyr::lead(Date, 1), Date, units = "days")),
     interest_rate_differential = {{home_int}} - {{US_int}}) %>% 
     #use annual interest rate differential for interpretation
     na.omit()
