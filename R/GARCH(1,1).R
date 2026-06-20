@@ -1,10 +1,11 @@
 #GARCH(1,1) analysis with t-distribution
+#GARCH(q, p) is also possible as robustness, but (1,1) is used in thesis
 
 #includes options for robustness checks
 #QMLE GARCH via dist argument
 #asymmetric via model argument
 
-garch_m <- function(data, fx, home_int, US_int, dist = "std", model = "sGARCH"){
+garch_m <- function(data, fx, home_int, US_int, dist = "std", model = "sGARCH", q=1, p=1 ){
 
   #calculate log returns of exchange rate
   data <- data %>% 
@@ -23,7 +24,7 @@ garch_m <- function(data, fx, home_int, US_int, dist = "std", model = "sGARCH"){
   spec <- ugarchspec(
     #ugarchspec() defines structure of model without calculating it directly
     #ugarchspec() has the following three arguments to specify the garch model
-    variance.model = list(model = model, garchOrder = c(1,1)),#sGarch is symmetric garch model and used as default
+    variance.model = list(model = model, garchOrder = c(q,p)),#sGarch is symmetric garch model and used as default
     mean.model = list(armaOrder = c(0,0), include.mean = TRUE, #TRUE includes intercept
                       archm = TRUE, archpow = 1, 
                       #archm TRUE includes conditional variance estimate in mean equation
@@ -43,7 +44,7 @@ garch_m <- function(data, fx, home_int, US_int, dist = "std", model = "sGARCH"){
   conv_se <- garch_estimation@fit$matcoef #coef with conventional SEs from Hessian
   robust_se <- garch_estimation@fit$robust.matcoef #coef with robust SEs from Bollerslev-Wooldridge
   #check persisitence in var equation, i.e. check stationarity
-  persistence <- coef(garch_estimation)["alpha1"] + coef(garch_estimation)["beta1"] 
+  persistence <- coef(garch_estimation)["alpha1"] + coef(garch_estimation)["beta1"]#only true for GARCH(1,1); persistence_package always correct
   persistence_package <- rugarch::persistence(garch_estimation) #directly calculates persistence via packag
   #needed for GJR Garch, because persistence is given by alpha+beta+gamma*0.5
   

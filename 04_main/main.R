@@ -36,7 +36,7 @@ IDR_fx <- read_excel("fx_IDR.xlsx", sheet=2) %>% select(`TIME_PERIOD:Period`, `O
 
 
 #reading interest rates
-setwd("/Users/fabiourrich/Library/CloudStorage/OneDrive-Personal/UIP_fx_volatility/Data/BA_Fabio/01_data/interest_rate")
+setwd("/Users/fabiourrich/Library/CloudStorage/OneDrive-Personal/UIP_fx_volatility/Data/BA_Fabio/01_data/interest_rates")
 US_interest <- read_excel("USDOND.xlsx") %>% mutate(Date = as_date(Date)) %>% arrange(Date) %>% filter(Date >= as.Date("2000-01-01"))
 AUD_interest <- read_excel("AUDOND.xlsx") %>% mutate(Date = as_date(Date)) %>% arrange(Date) %>% filter(Date >= as.Date("2000-01-01"))
 EUR_interest <- read_excel("EUROND.xlsx") %>% mutate(Date = as_date(Date)) %>% arrange(Date) %>% filter(Date >= as.Date("2000-01-01"))
@@ -300,6 +300,144 @@ beta_comparison_no_aud
 
 
 
+#run GARCH(q,p) up to order 4 to check stability of beta and gamma
+AUD_garch_q_p <- list()
+#for loop that calls all possible combinations up to order 4 for q and p
+for(q in 1:4){
+  for(p in 1:4){
+    index_q_p <- paste0("q", q, "_p", p)#gives the index used for the corresponding estimation 
+    AUD_garch_q_p[[index_q_p]] <- garch_m(AUD_merged, AUD_fx, AUD_int, US_int, q=q, p=p)
+  }
+}
+#create table for all different combinations with beta, p value for beta=1, gamma, p value for gamma=0, p value for alpha+gamma=0
+AUD_table <- do.call(rbind, lapply(names(AUD_garch_q_p), function(k){#each name of AUD_garch_q_p applied to function
+  r <- AUD_garch_q_p[[k]]
+  cf <- r$robust_se
+  data.frame(#function creates dataframe with following values as output
+    model          = k,
+    beta           = round(cf["mxreg1", 1], 4),
+    p_beta1        = round(as.numeric(r$wald_beta["P"]), 4),
+    gamma          = round(cf["archm", 1], 4),
+    p_gamma0       = round(cf["archm", 4], 4),
+    p_alpha_gamma0 = round(as.numeric(r$wald_no_premium["P"]), 4)
+  )
+}))
+AUD_table
+
+EUR_garch_q_p <- list()
+for(q in 1:4){
+  for(p in 1:4){
+    index_q_p <- paste0("q", q, "_p", p)
+    EUR_garch_q_p[[index_q_p]] <- garch_m(EUR_merged, EUR_fx, EUR_int, US_int, q=q, p=p)
+  }
+}
+EUR_table <- do.call(rbind, lapply(names(EUR_garch_q_p), function(k) {
+  r <- EUR_garch_q_p[[k]]
+  if (is.null(r)) return(NULL)
+  cf <- r$robust_se
+  data.frame(
+    model          = k,
+    beta           = round(cf["mxreg1", 1], 4),
+    p_beta1        = round(as.numeric(r$wald_beta["P"]), 4),
+    gamma          = round(cf["archm", 1], 4),
+    p_gamma0       = round(cf["archm", 4], 4),
+    p_alpha_gamma0 = round(as.numeric(r$wald_no_premium["P"]), 4)
+  )
+}))
+EUR_table
+
+
+GBP_garch_q_p <- list()
+for(q in 1:4){
+  for(p in 1:4){
+    index_q_p <- paste0("q", q, "_p", p)
+    GBP_garch_q_p[[index_q_p]] <- garch_m(GBP_merged, GBP_fx, GBP_int, US_int, q=q, p=p)
+  }
+}
+GBP_table <- do.call(rbind, lapply(names(GBP_garch_q_p), function(k) {
+  r <- GBP_garch_q_p[[k]]
+  if (is.null(r)) return(NULL)
+  cf <- r$robust_se
+  data.frame(
+    model          = k,
+    beta           = round(cf["mxreg1", 1], 4),
+    p_beta1        = round(as.numeric(r$wald_beta["P"]), 4),
+    gamma          = round(cf["archm", 1], 4),
+    p_gamma0       = round(cf["archm", 4], 4),
+    p_alpha_gamma0 = round(as.numeric(r$wald_no_premium["P"]), 4)
+  )
+}))
+GBP_table
+
+
+ZAR_garch_q_p <- list()
+for(q in 1:4){
+  for(p in 1:4){
+    index_q_p <- paste0("q", q, "_p", p)
+    ZAR_garch_q_p[[index_q_p]] <- garch_m(ZAR_merged, ZAR_fx, ZAR_int, US_int, q=q, p=p)
+  }
+}
+ZAR_table <- do.call(rbind, lapply(names(ZAR_garch_q_p), function(k) {
+  r <- ZAR_garch_q_p[[k]]
+  if (is.null(r)) return(NULL)
+  cf <- r$robust_se
+  data.frame(
+    model          = k,
+    beta           = round(cf["mxreg1", 1], 4),
+    p_beta1        = round(as.numeric(r$wald_beta["P"]), 4),
+    gamma          = round(cf["archm", 1], 4),
+    p_gamma0       = round(cf["archm", 4], 4),
+    p_alpha_gamma0 = round(as.numeric(r$wald_no_premium["P"]), 4)
+  )
+}))
+ZAR_table
+
+
+INR_garch_q_p <- list()
+for(q in 1:4){
+  for(p in 1:4){
+    index_q_p <- paste0("q", q, "_p", p)
+    INR_garch_q_p[[index_q_p]] <- garch_m(INR_merged, INR_fx, INR_int, US_int, q=q, p=p)
+  }
+}
+INR_table <- do.call(rbind, lapply(names(INR_garch_q_p), function(k) {
+  r <- INR_garch_q_p[[k]]
+  if (is.null(r)) return(NULL)
+  cf <- r$robust_se
+  data.frame(
+    model          = k,
+    beta           = round(cf["mxreg1", 1], 4),
+    p_beta1        = round(as.numeric(r$wald_beta["P"]), 4),
+    gamma          = round(cf["archm", 1], 4),
+    p_gamma0       = round(cf["archm", 4], 4),
+    p_alpha_gamma0 = round(as.numeric(r$wald_no_premium["P"]), 4)
+  )
+}))
+INR_table
+
+
+IDR_garch_q_p <- list()
+for(q in 1:4){
+  for(p in 1:4){
+    index_q_p <- paste0("q", q, "_p", p)
+    IDR_garch_q_p[[index_q_p]] <- garch_m(IDR_merged, IDR_fx, IDR_int, US_int, q=q, p=p)
+  }
+}
+IDR_table <- do.call(rbind, lapply(names(IDR_garch_q_p), function(k) {
+  r <- IDR_garch_q_p[[k]]
+  if (is.null(r)) return(NULL)
+  cf <- r$robust_se
+  data.frame(
+    model          = k,
+    beta           = round(cf["mxreg1", 1], 4),
+    p_beta1        = round(as.numeric(r$wald_beta["P"]), 4),
+    gamma          = round(cf["archm", 1], 4),
+    p_gamma0       = round(cf["archm", 4], 4),
+    p_alpha_gamma0 = round(as.numeric(r$wald_no_premium["P"]), 4)
+  )
+}))
+IDR_table
+
 
 ########################
 #plots
@@ -339,25 +477,25 @@ EUR_plot_stationarity <- plot_stationarity_1(EUR_merged, Date, EUR_fx, type = "E
 EUR_plot_stationarity
 GBP_plot_stationarity <- plot_stationarity_1(GBP_merged, Date, GBP_fx, type = "Exchange Rate")
 GBP_plot_stationarity
-ZAR_plot_stationarity <- plot_stationarity_1(ZAR_merged, Date, ZAR_fx)
+ZAR_plot_stationarity <- plot_stationarity_1(ZAR_merged, Date, ZAR_fx, type = "Exchange Rate")
 ZAR_plot_stationarity
-INR_plot_stationarity <- plot_stationarity_1(INR_merged, Date, INR_fx)
+INR_plot_stationarity <- plot_stationarity_1(INR_merged, Date, INR_fx, type = "Exchange Rate")
 INR_plot_stationarity
-IDR_plot_stationarity <- plot_stationarity_1(IDR_merged, Date, IDR_fx)
+IDR_plot_stationarity <- plot_stationarity_1(IDR_merged, Date, IDR_fx, type = "Exchange Rate")
 IDR_plot_stationarity
 
 #plot of interest rate data to check for drifts and trends
-AUD_plot_stationarity_int <- plot_stationarity_1(AUD_merged, Date, AUD_int)
+AUD_plot_stationarity_int <- plot_stationarity_1(AUD_merged, Date, AUD_int, type = "Interest Rate")
 AUD_plot_stationarity_int
-EUR_plot_stationarity_int <- plot_stationarity_1(EUR_merged, Date, EUR_int)
+EUR_plot_stationarity_int <- plot_stationarity_1(EUR_merged, Date, EUR_int, type = "Interest Rate")
 EUR_plot_stationarity_int
-GBP_plot_stationarity_int <- plot_stationarity_1(GBP_merged, Date, GBP_int)
+GBP_plot_stationarity_int <- plot_stationarity_1(GBP_merged, Date, GBP_int, type = "Interest Rate")
 GBP_plot_stationarity_int
-ZAR_plot_stationarity_int <- plot_stationarity_1(ZAR_merged, Date, ZAR_int)
+ZAR_plot_stationarity_int <- plot_stationarity_1(ZAR_merged, Date, ZAR_int, type = "Interest Rate")
 ZAR_plot_stationarity_int
-INR_plot_stationarity_int <- plot_stationarity_1(INR_merged, Date, INR_int)
+INR_plot_stationarity_int <- plot_stationarity_1(INR_merged, Date, INR_int, type = "Interest Rate")
 INR_plot_stationarity_int
-IDR_plot_stationarity_int <- plot_stationarity_1(IDR_merged, Date, IDR_int)
+IDR_plot_stationarity_int <- plot_stationarity_1(IDR_merged, Date, IDR_int, type = "Interest Rate")
 IDR_plot_stationarity_int
 
 
