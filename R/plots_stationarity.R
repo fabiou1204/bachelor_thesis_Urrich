@@ -6,8 +6,7 @@ plot_stationarity_1 <- function(data, date, series, type){
   p <- ggplot(data, aes(x={{date}}, y={{series}} ))+
                           geom_line (color = "blue", linewidth = 0.2) +
                           theme_minimal() +
-                          labs(title = paste("Time Series", series_name),
-                               x = "Date",
-                               y = type)
+                          #labs(title = paste("Time Series", series_name),
+                          labs(y = type)
                           return(p)
 }
