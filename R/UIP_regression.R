@@ -52,7 +52,6 @@ Fama <- function(data, fx, home_int, US_int){
     summary = summary(fama_model),
     data = data,
     coef = summary(fama_model)$coefficients,
-    nw_lag = nw_lag, #chosen Newey-West lag
     p_value_nw = p_val_beta1_nw,
     vcov_nw = vcov_nw,
     coef_nw = coef_nw,
